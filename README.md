@@ -1,3 +1,3 @@
-/ AmidA SEO - Keyword Explorser/
-# The tool analyze data from top google search results and extract relevant keywords
-## Enter a keyword or phrase, the tool will return relevant phrases order by relevant score.
+# AmidA SEO - Keyword Explorser
+## A tool to discover relevant phrases from top Google search results
+### Enter a keyword or phrase, the tool will return relevant phrases order by relevant score.
