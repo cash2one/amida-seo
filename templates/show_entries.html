@@ -1,0 +1,74 @@
+{% extends "layout.html" %} {% block body %}
+<div class="banner-search-bar align-center">
+  <form action="{{ url_for('show_result') }}" method="post">
+    <p class="top0 bottom0 input-group input-group-large">
+      <input class="input text-focus" type="text" placeholder="Enter a term or phrase" name="keyword" value='{{keyword}}'>
+        <input type="submit" class="button-primary large-cta yellow wide-cta" value="Search">
+    </p>
+      
+</form>
+</div>
+</div>
+<ul class="entries">
+  {% if error %}
+  <p><strong>{{error}}</strong></p>
+  {% endif %} 
+  <!--Relevance keywords from titles-->
+  {% if title_keywords %}
+  <p>
+    <strong>Relevance keywords from search results' titles:</strong>
+    <table id="keywords">
+      <tr>
+        <th>Word</th>
+        <th>Frequency</th>
+      </tr>
+
+      {% for kw in title_keywords %}
+      <tr>
+        <td>{{kw.word}}</td>
+        <td>{{kw.score}}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </p>
+  {% endif %}
+  <!--Relevance keywords from description-->
+  {% if des_keywords %}
+  <p>
+    <strong>Relevance keywords from search results' description:</strong>
+    <table id="keywords">
+      <tr>
+        <th>Word</th>
+        <th>Frequency</th>
+      </tr>
+
+      {% for kw in des_keywords %}
+      <tr>
+        <td>{{kw.word}}</td>
+        <td>{{kw.score}}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </p>
+  {% endif %}
+  <!--Relevance keywords from contents-->
+  {% if content_keywords %}
+  <p>
+    <strong>Relevance keywords from search results' contents:</strong>
+    <table id="keywords">
+      <tr>
+        <th>Word</th>
+        <th>Frequency</th>
+      </tr>
+
+      {% for kw in content_keywords %}
+      <tr>
+        <td>{{kw.word}}</td>
+        <td>{{kw.score}}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </p>
+  {% endif %}
+</ul>
+{% endblock %}
