@@ -80,7 +80,7 @@ class KeywordAnalyser(object):
         
         return ScraperResult(urls,titles,descriptions,contents)
     
-    def extract_keyword_en(self, corpus_text):
+    def extract_keyword_en(self, corpus_text, min_len=4, max_len=50):
         alchemyapi = AlchemyAPI(ALCHEMY_API_KEY)
 
         response = alchemyapi.keywords('text', corpus_text, {'sentiment': 1})
@@ -88,11 +88,12 @@ class KeywordAnalyser(object):
         keywords = []
         if response['status'] == "OK":
             for keyword in response['keywords']:
-                pharse = keyword['text'].encode('utf8')
-                #score = float(keyword['relevance'].encode('utf8'))
-                score = self.phrase_frequency(pharse, corpus_text)
-                kw = Keyword(pharse, score)
-                keywords.append(kw)
+                phrase = keyword['text'].encode('utf8')
+                if phrase.lower() != self.query.lower() and len(phrase) >= min_len and len(phrase) <= max_len:
+                    #score = float(keyword['relevance'].encode('utf8'))
+                    score = self.phrase_frequency(phrase, corpus_text)
+                    kw = Keyword(phrase, score)
+                    keywords.append(kw)
 
         
         return keywords[:min(len(keywords), self.numberofkeywords)]
@@ -128,7 +129,7 @@ class KeywordAnalyser(object):
             katamatch = re.search(KATA, phrase, re.U)
             if not kanjimatch and not hiramatch and not katamatch:
                 continue
-            if (len(phrase) >= min_len) and (len(phrase) <= max_len) and (phrase not in self.stoplist):
+            if (len(phrase) >= min_len) and (len(phrase) <= max_len) and (phrase not in self.stoplist) and (phrase.lower() != self.query.lower()):
                 score = self.phrase_frequency(phrase, corpus_text)
                 kw = Keyword(phrase, score)
                 if kw not in keywords:
@@ -149,7 +150,7 @@ class KeywordAnalyser(object):
                 katamatch = re.search(KATA, phrase, re.U)
                 if not kanjimatch and not hiramatch and not katamatch:
                     continue
-                if (len(phrase) >= min_len) and (len(phrase) <= max_len) and (phrase not in self.stoplist):
+                if (len(phrase) >= min_len) and (len(phrase) <= max_len) and (phrase not in self.stoplist) and (phrase.lower() != self.query.lower()):
                     score = self.phrase_frequency(phrase, corpus_text)
                     kw = Keyword(phrase, score)
                     if kw not in keywords:
