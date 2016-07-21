@@ -10,12 +10,14 @@ Analyse Google search results and return important keywords
 from scraper import GoogleScraper, ScraperError
 from alchemyapi import AlchemyAPI
 from azureapi import AzureAPI
+from yahooapi import YahooAPI
 import sys
 import justext
 import re
 
-ALCHEMY_API_KEY = "Enter a alchemy api key"
-AZURE_API_KEY = "Enter a azure api key"
+ALCHEMY_API_KEY = "Enter an alcheme api key"
+AZURE_API_KEY = "Enter an azure api key"
+YAHOO_APP_KEY = "Enter Yahoo app key"
 KANJI = u'[\u4E00-\u9FFF]+'
 HIRA = u'[\u3040-\u309Fー]+'
 KATA = u'[\u30A0-\u30FF]+'
@@ -31,9 +33,10 @@ class Frequency(object):
 
 
 class Keyword(object):
-    def __init__(self, word, score):
+    def __init__(self, word, score, frequency):
         self.word = word
         self.score = score
+        self.frequency = frequency
 
     def __str__(self):
         return "Keyword word: '%s'. Relevant score: %s" % (self.word, self.score)
@@ -90,13 +93,14 @@ class KeywordAnalyser(object):
             for keyword in response['keywords']:
                 phrase = keyword['text'].encode('utf8')
                 if phrase.lower() != self.query.lower() and len(phrase) >= min_len and len(phrase) <= max_len:
-                    #score = float(keyword['relevance'].encode('utf8'))
-                    score = self.phrase_frequency(phrase, corpus_text)
-                    kw = Keyword(phrase, score)
+                    score = float(keyword['relevance'].encode('utf8'))
+                    freq = self.phrase_frequency(phrase, corpus_text)
+                    kw = Keyword(phrase, score, freq)
                     keywords.append(kw)
 
         
         return keywords[:min(len(keywords), self.numberofkeywords)]
+
 
     #Using Azure API
     def extract_keyword_jp(self, corpus):
@@ -118,7 +122,7 @@ class KeywordAnalyser(object):
             raise e
         return keywords
     
-    def get_important_keyphrases_from_single_doc(self, lang, corpus_text, min_len=4, max_len=15):
+    def get_important_keyphrases_from_single_doc(self, lang, corpus_text, min_len=3, max_len=20):
         api = AzureAPI(AZURE_API_KEY)
         keywords = []
         res = api.keyphrases(lang, [corpus_text])
@@ -136,7 +140,7 @@ class KeywordAnalyser(object):
                     keywords.append(kw)
         return keywords[:min(len(keywords), self.numberofkeywords)]
 
-    def get_important_keyphrases_from_multiple_docs(self, lang, corpus, size, corpus_text, min_len=4, max_len=15):
+    def get_important_keyphrases_from_multiple_docs(self, lang, corpus, size, corpus_text, min_len=3, max_len=20):
         api = AzureAPI(AZURE_API_KEY)
         keywords = []
         nofwords = size / 10000
@@ -157,6 +161,65 @@ class KeywordAnalyser(object):
                         keywords.append(kw)
         return keywords
 
+    def extract_keyword_jp_yahoo(self, corpus):
+        MAX_DOC_SIZE = 10000
+        try:
+            corpus_text = "\n".join(corpus)
+            size = sys.getsizeof(corpus_text)
+            if size < MAX_DOC_SIZE:
+                keywords = self.get_important_keyphrases_from_single_doc_yahoo(corpus_text)
+            else:
+                lines = corpus_text.splitlines()
+                nochunks = size / MAX_DOC_SIZE + 1
+                noflines = len(lines) / nochunks
+                chunks = [lines[x:x+noflines] for x in range(0, len(lines), noflines)]
+                docs = []
+                for chunk in chunks:
+                    cor = '\n'.join(chunk)
+                    docs.append(cor)
+                keywords = self.get_important_keyphrases_from_multiple_docs_yahoo(docs, corpus_text)
+        except Exception as e:
+            raise e
+        return keywords
+
+    def get_important_keyphrases_from_single_doc_yahoo(self, corpus_text, min_len=3, max_len=20):
+        api = YahooAPI(YAHOO_APP_KEY)
+        keywords = []
+        res = api.keyphrases(corpus_text)
+        for phrase, s in res.iteritems():
+            kanjimatch = re.search(KANJI, phrase, re.U)
+            hiramatch = re.search(HIRA, phrase, re.U)
+            katamatch = re.search(KATA, phrase, re.U)
+            if not kanjimatch and not hiramatch and not katamatch:
+                continue
+            if (len(phrase) >= min_len) and (len(phrase) <= max_len) and (phrase not in self.stoplist) and (phrase.lower() != self.query.lower()):
+                freq = self.phrase_frequency(phrase, corpus_text)
+                kw = Keyword(phrase, float(s)/100, freq)
+                if kw not in keywords:
+                    keywords.append(kw)
+        keywords.sort(key=lambda x: x.score, reverse=True)
+        return keywords[:min(len(keywords), self.numberofkeywords)]
+
+    def get_important_keyphrases_from_multiple_docs_yahoo(self, corpus, corpus_text, min_len=3, max_len=20):
+        api = YahooAPI(YAHOO_APP_KEY)
+        keywords = []
+
+        for cor in corpus:
+            res = api.keyphrases(cor)
+            for phrase, s in res.iteritems():
+                kanjimatch = re.search(KANJI, phrase, re.U)
+                hiramatch = re.search(HIRA, phrase, re.U)
+                katamatch = re.search(KATA, phrase, re.U)
+                if not kanjimatch and not hiramatch and not katamatch:
+                    continue
+                if (len(phrase) >= min_len) and (len(phrase) <= max_len) and (phrase not in self.stoplist) and (phrase.lower() != self.query.lower()):
+                    freq = self.phrase_frequency(phrase, corpus_text)
+                    kw = Keyword(phrase, float(s)/100, freq)
+                    if kw not in keywords:
+                        keywords.append(kw)
+        keywords.sort(key=lambda x: x.score, reverse=True)
+        return keywords[:min(len(keywords), self.numberofkeywords)]
+
     def extract_keywords(self, corpus, content=False):
         corpus_text = "\n".join(corpus)
         if content:
@@ -168,15 +231,15 @@ class KeywordAnalyser(object):
         if res['status'] == 'OK':
             lang = res['language']
         if lang == "japanese" or lang == "chinese":
-            return self.extract_keyword_jp(corpus)
+            return self.extract_keyword_jp_yahoo(corpus)
         else:
             return self.extract_keyword_en(corpus_text)
 
     def phrase_frequency(self, phrase, text):
-        lines = text.splitlines()
+        lines = text.lower().splitlines()
         count = 0
         for line in lines:
-            ct = line.count(phrase)
+            ct = line.count(phrase.lower())
             count = count + ct
         return count
     

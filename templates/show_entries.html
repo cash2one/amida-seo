@@ -19,14 +19,16 @@
     <strong>Relevance keywords from search results' titles:</strong>
     <table id="keywords">
       <tr>
-        <th>Word</th>
-        <th>Frequency</th>
+        <th width="60%">Word</th>
+        <th width="20%">Relevance</th>
+        <th width="20%">Frequency</th>
       </tr>
 
       {% for kw in title_keywords %}
       <tr>
         <td>{{kw.word}}</td>
-        <td>{{kw.score}}</td>
+        <td>{{"{0:.2f}".format(kw.score)}}</td>
+        <td>{{kw.frequency}}</td>
       </tr>
       {% endfor %}
     </table>
@@ -38,14 +40,16 @@
     <strong>Relevance keywords from search results' description:</strong>
     <table id="keywords">
       <tr>
-        <th>Word</th>
-        <th>Frequency</th>
+        <th width="60%">Word</th>
+        <th width="20%">Relevance</th>
+        <th width="20%">Frequency</th>
       </tr>
 
       {% for kw in des_keywords %}
       <tr>
         <td>{{kw.word}}</td>
-        <td>{{kw.score}}</td>
+        <td>{{"{0:.2f}".format(kw.score)}}</td>
+        <td>{{kw.frequency}}</td>
       </tr>
       {% endfor %}
     </table>
@@ -57,14 +61,16 @@
     <strong>Relevance keywords from search results' contents:</strong>
     <table id="keywords">
       <tr>
-        <th>Word</th>
-        <th>Frequency</th>
+        <th width="60%">Word</th>
+        <th width="20%">Relevance</th>
+        <th width="20%">Frequency</th>
       </tr>
 
       {% for kw in content_keywords %}
       <tr>
         <td>{{kw.word}}</td>
-        <td>{{kw.score}}</td>
+        <td>{{"{0:.2f}".format(kw.score)}}</td>
+        <td>{{kw.frequency}}</td>
       </tr>
       {% endfor %}
     </table>
