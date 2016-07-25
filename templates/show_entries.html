@@ -1,14 +1,22 @@
 {% extends "layout.html" %} {% block body %}
+<script type="text/javascript">// <![CDATA[
+        function loading(){
+            $("#loading").show();
+            $("#content").hide();       
+        }
+// ]]></script>
 <div class="banner-search-bar align-center">
   <form action="{{ url_for('show_result') }}" method="post">
     <p class="top0 bottom0 input-group input-group-large">
       <input class="input text-focus" type="text" placeholder="Enter a term or phrase" name="keyword" value='{{keyword}}'>
-        <input type="submit" class="button-primary large-cta yellow wide-cta" value="Search">
+        <input type="submit" class="button-primary large-cta yellow wide-cta" value="Search" onclick="loading();">
     </p>
       
 </form>
 </div>
 </div>
+<div id="loading"> </div>
+<div id="content">
 <ul class="entries">
   {% if error %}
   <p><strong>{{error}}</strong></p>
@@ -77,4 +85,5 @@
   </p>
   {% endif %}
 </ul>
+</div>
 {% endblock %}

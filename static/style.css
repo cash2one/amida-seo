@@ -5,6 +5,16 @@ body            { font-family: sans-serif; background: #eee; }
 .entries           { margin-top: -3px auto; width: 36em; border: 3px solid #ccc;
                   padding: 0.5em; background-color: #eee; }
 
+div#loading {
+    width: 35px;
+    height: 35px;
+    display: none;
+    background: url(loading.gif) no-repeat;
+    cursor: wait;
+    margin-left: auto;
+    margin-right: auto
+}
+
 h1, .h1 {
     font-family: "Roboto Slab","Museo","Helvetica Neue",Helvetica,Arial,sans-serif;
     font-size: 20px;
