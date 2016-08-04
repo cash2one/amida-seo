@@ -321,19 +321,17 @@ class WebContentScraper(GoogleScraper):
         try:
             page = self.browser.get_page(self.url)
         except BrowserError, e:
-            raise ScraperError, "Failed to crawl website '%s': %s" %(self.url, e.error)
+            #raise ScraperError, "Failed to crawl website '%s': %s" %(self.url, e.error)
+            return ''
         
-        paragraphs = justext.justext(page, justext.get_stoplists(), length_low=self.min_len)
+        paragraphs = justext.justext(page, [], stopwords_high=0, stopwords_low = 0, length_low=self.min_len)
         text = []
         if len(paragraphs) < 1:
             return "Justext failed"
         for paragraph in paragraphs:
             if not paragraph.is_boilerplate:
                 text.append(paragraph.text)
-            else:
-                if len(paragraph.text) > self.min_len:
-                    text.append(paragraph.text)
-
+                
         content = '\n'.join(text)
         return content
 
