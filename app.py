@@ -22,9 +22,12 @@ def show_entries():
 
 @app.route('/', methods=['POST'])
 def show_result():
+    #userIP = request.remote_addr
     #engine = request.form['engine'].encode('utf8')
+
+    country = request.form['country']
     keyword = request.form['keyword'].encode('utf8')
-    analyser = KeywordAnalyser(keyword, tld="co.jp");
+    analyser = KeywordAnalyser(keyword, numofresults=10, tld=country);
     """if keyword == 'debug':
         return render_template('show_entries.html', error=engine)"""
     if keyword == '':
@@ -35,6 +38,6 @@ def show_result():
             title_keywords = analyser.extract_keywords(scrapresult.titles)
             des_keywords = analyser.extract_keywords(scrapresult.descriptions)
             content_keywords = analyser.extract_keywords(scrapresult.contents, content=True)
-            return render_template('show_entries.html', keyword=keyword, title_keywords=title_keywords, des_keywords=des_keywords, content_keywords=content_keywords)
+            return render_template('show_entries.html', keyword=keyword, selectedcountry=country, title_keywords=title_keywords, des_keywords=des_keywords, content_keywords=content_keywords)
         except Exception, e:
-            return render_template('show_entries.html', keyword=keyword, error=e)
+            return render_template('show_entries.html', keyword=keyword, selectedcountry=country, error=e)

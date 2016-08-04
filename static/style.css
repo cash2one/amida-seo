@@ -1,9 +1,9 @@
 body            { font-family: sans-serif; background: #eee; }
-.page           { margin: 15px auto; width: 36em; padding: 0.5em; background-color: #eee; }
-.banner           { margin-bottom: 0px auto; width: 36em; border: 3px solid #ccc;
-                  padding: 0.5em; background-color: #1D6B87; }
-.entries           { margin-top: -3px auto; width: 36em; border: 3px solid #ccc;
-                  padding: 0.5em; background-color: #eee; }
+.page           { margin: 15px auto; width: 800px; padding: 8px; background-color: #eee; }
+.banner           { margin-bottom: 0px auto; width: 800px; border: 3px solid #ccc;
+                  padding: 8px; background-color: #1D6B87; }
+.entries           { margin-top: -3px auto; width: 800px; border: 3px solid #ccc;
+                  padding: 8px; background-color: #eee; }
 
 div#loading {
     width: 35px;
@@ -89,44 +89,53 @@ div {
 }
 
 .banner-search-bar {
-    margin-left: 30px;
+    margin-left: 20px;
     margin-bottom: 10px;
     color: #5D6769;
 }
 
-.bottom0 {
-    margin-bottom: 0px !important;
-}
-
-.input-group {
+.myinput-container {
     display: -ms-flexbox;
     display: flex;
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+    width: 800px;
 }
 
-.input-group.input-group-large {
+.myinput-group {
+    display: -ms-flexbox;
+    display: flex;
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
     min-width: 50px;
     height: 40px;
     line-height: 40px;
 }
 
-.top0 {
-    margin-top: 0px !important;
-}
-
-.text-focus {
-    font-size: 18px;
-    line-height: 22px;
-}
-
-.input {
+.keywordinput {
     background-color: #FFF;
     border: 1px solid #DBE3E3;
-    border-radius: 2px;
+    border-radius: 3px;
     display: inline-block;
     outline: none;
     padding: 0 10px;
     vertical-align: middle;
-    width: 395px;
+    width: 485px;
+    font-size: 18px;
+    line-height: 22px;
+}
+
+.countryinput {
+    background-color: #FFF;
+    border: 1px solid #DBE3E3;
+    border-radius: 0px;
+    display: inline-block;
+    outline: none;
+    padding: 0 10px;
+    vertical-align: middle;
+    width: 150px;
+    font-size: 16px;
+    line-height: 22px;
 }
 
 .button-primary {
@@ -169,6 +178,7 @@ div {
     box-shadow: 1px 1px 0 0 #E4B34F,1px -1px 0 0 #E4B34F,-1px 1px 0 0 #E4B34F,-1px -1px 0 0 #E4B34F;
     color: #994122;
 }
+
 
 table {
     width:100%;

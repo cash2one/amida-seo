@@ -24,7 +24,9 @@ def show_entries():
 def show_result():
     #engine = request.form['engine'].encode('utf8')
     keyword = request.form['keyword'].encode('utf8')
-    analyser = KeywordAnalyser(keyword, tld="co.jp");
+    country = request.form['country']
+
+    analyser = KeywordAnalyser(keyword, tld=country);
     """if keyword == 'debug':
         return render_template('show_entries.html', error=engine)"""
     if keyword == '':
@@ -35,9 +37,9 @@ def show_result():
             title_keywords = analyser.extract_keywords(scrapresult.titles)
             des_keywords = analyser.extract_keywords(scrapresult.descriptions)
             content_keywords = analyser.extract_keywords(scrapresult.contents)
-            return render_template('show_entries.html', keyword=keyword, title_keywords=title_keywords, des_keywords=des_keywords, content_keywords=content_keywords)
+            return render_template('show_entries.html', keyword=keyword, selectedcountry=country,title_keywords=title_keywords, des_keywords=des_keywords, content_keywords=content_keywords)
         except Exception, e:
-            return render_template('show_entries.html', keyword=keyword, error=e)
+            return render_template('show_entries.html', keyword=keyword, selectedcountry=country, error=e)
 
 if __name__ == "__main__":
 	app.run()

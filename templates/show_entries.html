@@ -7,11 +7,19 @@
 // ]]></script>
 <div class="banner-search-bar align-center">
   <form action="{{ url_for('show_result') }}" method="post">
-    <p class="top0 bottom0 input-group input-group-large">
-      <input class="input text-focus" type="text" placeholder="Enter a term or phrase" name="keyword" value='{{keyword}}'>
+    <div class="myinput-container">
+        <div class="myinput-group">
+          <input class="keywordinput" type="text" placeholder="Enter a term or phrase" name="keyword" value='{{keyword}}'>
+          
+          <select name="country" class="countryinput" >
+            <option value="" disabled {% if not selectedcountry %} selected="selected"{% endif %}>Country</option>
+            <option value="com" {% if selectedcountry=='com' %} selected="selected"{% endif %}>United States</option>
+            <option value="co.jp" {% if selectedcountry=='co.jp' %} selected="selected"{% endif %}>Japan</option>
+          </select>
+          
+        </div>
         <input type="submit" class="button-primary large-cta yellow wide-cta" value="Search" onclick="loading();">
-    </p>
-      
+    </div>  
 </form>
 </div>
 </div>
