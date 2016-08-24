@@ -15,9 +15,9 @@ import sys
 import justext
 import re
 
-ALCHEMY_API_KEY = "Enter an alcheme api key"
-AZURE_API_KEY = "Enter an azure api key"
-YAHOO_APP_KEY = "Enter Yahoo app key"
+ALCHEMY_API_KEY = "27a8e38142c6a48ea64a4c387be8f6da88cb4d1d"
+AZURE_API_KEY = "7bcb2e6d08b9421dad41aebadf5761fa"
+YAHOO_APP_KEY = "dj0zaiZpPTAxd2RIWGhiWUtyTyZzPWNvbnN1bWVyc2VjcmV0Jng9Y2M-"
 KANJI = u'[\u4E00-\u9FFF]+'
 HIRA = u'[\u3040-\u309Fー]+'
 KATA = u'[\u30A0-\u30FF]+'
@@ -60,10 +60,16 @@ class ScraperResult(object):
         return "Data from scraping %s urls" % len(urls)
 
 class KeywordAnalyser(object):
-    def __init__(self, query, numofresults=10, numberofkeywords=10, tld="com"):
+    def __init__(self, query, numofresults=10, numberofkeywords=50, lang="en", tld="com", mobile=False):
+
+        if mobile:
+            random_agent = False
+        else:
+            random_agent = True
+
         self.query = query
         self.numberofkeywords = numberofkeywords
-        self.scraper = GoogleScraper(query, random_agent=True, debug=True, tld=tld)
+        self.scraper = GoogleScraper(query, random_agent=random_agent, debug=True, lang=lang, tld=tld, mobile=mobile)
         self.scraper.results_per_page = numofresults
         self.stoplist = justext.get_stoplist("Japanese")
 
@@ -194,7 +200,7 @@ class KeywordAnalyser(object):
                 continue
             if (len(phrase) >= min_len) and (len(phrase) <= max_len) and (phrase not in self.stoplist) and (phrase.lower() != self.query.lower()):
                 freq = self.phrase_frequency(phrase, corpus_text)
-                kw = Keyword(phrase, float(s)/100, freq)
+                kw = Keyword(phrase, float(s)/101, freq)
                 if kw not in keywords:
                     keywords.append(kw)
         keywords.sort(key=lambda x: x.score, reverse=True)
@@ -214,14 +220,20 @@ class KeywordAnalyser(object):
                     continue
                 if (len(phrase) >= min_len) and (len(phrase) <= max_len) and (phrase not in self.stoplist) and (phrase.lower() != self.query.lower()):
                     freq = self.phrase_frequency(phrase, corpus_text)
-                    kw = Keyword(phrase, float(s)/100, freq)
+                    kw = Keyword(phrase, float(s)/101, freq)
                     if kw not in keywords:
                         keywords.append(kw)
         keywords.sort(key=lambda x: x.score, reverse=True)
         return keywords[:min(len(keywords), self.numberofkeywords)]
 
-    def extract_keywords(self, corpus, content=False):
+    def extract_keywords(self, corpus, title=False, des=False, content=False, lang='en'):
         corpus_text = "\n".join(corpus)
+        #Todo: Set threshold to filter keywords
+        '''threshold = 0
+        if title:
+            threshold = 0.2
+        if des:
+            threshold = 0.4
         if content:
             checktext = max(corpus)
         checktext = corpus_text
@@ -229,8 +241,8 @@ class KeywordAnalyser(object):
         res = alchemyapi.language('text', checktext)
         lang = ''
         if res['status'] == 'OK':
-            lang = res['language']
-        if lang == "japanese" or lang == "chinese":
+            lang = res['language']'''
+        if lang == "ja":
             return self.extract_keyword_jp_yahoo(corpus)
         else:
             return self.extract_keyword_en(corpus_text)

@@ -63,7 +63,7 @@ class GoogleScraper(object):
     SEARCH_URL_1 = "http://www.google.%(tld)s/search?hl=%(lang)s&q=%(query)s&num=%(num)d&btnG=Google+Search"
     NEXT_PAGE_1 = "http://www.google.%(tld)s/search?hl=%(lang)s&q=%(query)s&num=%(num)d&start=%(start)d"
 
-    def __init__(self, query, random_agent=False, debug=False, lang="en", tld="com", re_search_strings=None):
+    def __init__(self, query, random_agent=False, debug=False, lang="en", tld="com", re_search_strings=None, mobile=False):
         self.query = query
         self.debug = debug
         self.browser = Browser(debug=debug)
@@ -77,6 +77,7 @@ class GoogleScraper(object):
         self._last_from = 0
         self._lang = lang
         self._tld = tld
+        self.mobile = mobile
         
         if re_search_strings:
             self._re_search_strings = re_search_strings
@@ -90,6 +91,9 @@ class GoogleScraper(object):
 
         if random_agent:
             self.browser.set_random_user_agent()
+        if mobile:
+            self.browser.set_random_user_mobile_agent()
+
 
     @property
     def num_results(self):
@@ -157,7 +161,10 @@ class GoogleScraper(object):
         MAX_VALUE = 1000000
         page = self._get_results_page()
         #search_info = self._extract_info(page)
-        results = self._extract_results(page)
+        if self.mobile:
+            results = self._extract_mobile_results(page)
+        else:
+            results = self._extract_results(page)
         search_info = {'from': self.results_per_page*self._page,
                        'to': self.results_per_page*self._page + len(results),
                        'total': MAX_VALUE}
@@ -243,6 +250,18 @@ class GoogleScraper(object):
                     ret_res.append(eres)
         return ret_res
 
+    def _extract_mobile_results(self, soup):
+        result = soup.findAll('div', {'class': 'srg'})
+        ret_res = []
+        for re in result:
+            results = re.findAll('div', {'class':'mnr-c'})
+            for r in results:
+                eres = self._extract_result(r)
+                if eres:
+                    ret_res.append(eres)
+        return ret_res
+    
+    
     def _extract_result(self, result):
         title, url = self._extract_title_url(result)
         desc = self._extract_description(result)
@@ -262,11 +281,12 @@ class GoogleScraper(object):
         title = ''.join(title_a.findAll(text=True))
         title = self._html_unescape(title)
         url = title_a['href']
-        match = re.match(r'/url\?q=(http[^&]+)&', url)
-        if not match:
-            return None, None
-        else:
-            url = urllib.unquote(match.group(1))
+        if not url.startswith('http'):
+            match = re.match(r'/url\?q=(http[^&]+)&', url)
+            if not match:
+                return None, None
+            else:
+                url = urllib.unquote(match.group(1))
         return title, url
 
     def _extract_description(self, result):

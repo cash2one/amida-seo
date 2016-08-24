@@ -5,93 +5,101 @@
             $("#content").hide();       
         }
 // ]]></script>
-<div class="banner-search-bar align-center">
+<div class="banner-search-bar">
   <form action="{{ url_for('show_result') }}" method="post">
     <div class="myinput-container">
-        <div class="myinput-group">
-          <input class="keywordinput" type="text" placeholder="Enter a term or phrase" name="keyword" value='{{keyword}}'>
-          
-          <select name="country" class="countryinput" >
+      <div class="myinput-group">
+        <input class="keywordinput" type="text" placeholder="Enter a term or phrase" name="keyword" value='{{keyword}}'>
+
+        <select name="country" class="countryinput">
             <option value="" disabled {% if not selectedcountry %} selected="selected"{% endif %}>Country</option>
             <option value="com" {% if selectedcountry=='com' %} selected="selected"{% endif %}>United States</option>
             <option value="co.jp" {% if selectedcountry=='co.jp' %} selected="selected"{% endif %}>Japan</option>
           </select>
-          
-        </div>
-        <input type="submit" class="button-primary large-cta yellow wide-cta" value="Search" onclick="loading();">
-    </div>  
-</form>
+      </div>
+      <input type="submit" class="button-primary large-cta yellow wide-cta" value="Search" onclick="loading();">
+    </div>
+    <div class="searchtype">
+      <input type="radio" name="searchtype" value="ds" {% if selectedst=='ds' %} checked="checked" {% endif %}> Desktop Search
+      </input>
+      <input type="radio" name="searchtype" value="ms" {% if selectedst=='ms' %} checked="checked" {% endif %}> Mobile Search
+      </input>
+    </div>
+  </form>
 </div>
 </div>
 <div id="loading"> </div>
 <div id="content">
-<ul class="entries">
-  {% if error %}
-  <p><strong>{{error}}</strong></p>
-  {% endif %} 
-  <!--Relevance keywords from titles-->
-  {% if title_keywords %}
-  <p>
-    <strong>Relevance keywords from search results' titles:</strong>
-    <table id="keywords">
-      <tr>
-        <th width="60%">Word</th>
-        <th width="20%">Relevance</th>
-        <th width="20%">Frequency</th>
-      </tr>
+  <ul class="entries">
+    {% if error %}
+    <p><strong>{{error}}</strong></p>
+    {% endif %}
 
-      {% for kw in title_keywords %}
-      <tr>
-        <td>{{kw.word}}</td>
-        <td>{{"{0:.2f}".format(kw.score)}}</td>
-        <td>{{kw.frequency}}</td>
-      </tr>
-      {% endfor %}
-    </table>
-  </p>
-  {% endif %}
-  <!--Relevance keywords from description-->
-  {% if des_keywords %}
-  <p>
-    <strong>Relevance keywords from search results' description:</strong>
-    <table id="keywords">
-      <tr>
-        <th width="60%">Word</th>
-        <th width="20%">Relevance</th>
-        <th width="20%">Frequency</th>
-      </tr>
+    <!--Relevance keywords from contents-->
+    {% if content_keywords %}
+    <p>
+      <strong>Relevance keywords from search results' contents:</strong>
+      <table id="keywords">
+        <tr>
+          <th width="60%">Word</th>
+          <th width="20%">Relevance</th>
+          <th width="20%">Frequency</th>
+        </tr>
 
-      {% for kw in des_keywords %}
-      <tr>
-        <td>{{kw.word}}</td>
-        <td>{{"{0:.2f}".format(kw.score)}}</td>
-        <td>{{kw.frequency}}</td>
-      </tr>
-      {% endfor %}
-    </table>
-  </p>
-  {% endif %}
-  <!--Relevance keywords from contents-->
-  {% if content_keywords %}
-  <p>
-    <strong>Relevance keywords from search results' contents:</strong>
-    <table id="keywords">
-      <tr>
-        <th width="60%">Word</th>
-        <th width="20%">Relevance</th>
-        <th width="20%">Frequency</th>
-      </tr>
+        {% for kw in content_keywords %}
+        <tr>
+          <td>{{kw.word}}</td>
+          <td>{{"{0:.2f}".format(kw.score)}}</td>
+          <td>{{kw.frequency}}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </p>
+    {% endif %}
 
-      {% for kw in content_keywords %}
-      <tr>
-        <td>{{kw.word}}</td>
-        <td>{{"{0:.2f}".format(kw.score)}}</td>
-        <td>{{kw.frequency}}</td>
-      </tr>
-      {% endfor %}
-    </table>
-  </p>
-  {% endif %}
-</ul>
+    <!--Relevance keywords from titles-->
+    {% if title_keywords %}
+    <p>
+      <strong>Relevance keywords from search results' titles:</strong>
+      <table id="keywords">
+        <tr>
+          <th width="60%">Word</th>
+          <th width="20%">Relevance</th>
+          <th width="20%">Frequency</th>
+        </tr>
+
+        {% for kw in title_keywords %}
+        <tr>
+          <td>{{kw.word}}</td>
+          <td>{{"{0:.2f}".format(kw.score)}}</td>
+          <td>{{kw.frequency}}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </p>
+    {% endif %}
+
+    <!--Relevance keywords from description-->
+    {% if des_keywords %}
+    <p>
+      <strong>Relevance keywords from search results' description:</strong>
+      <table id="keywords">
+        <tr>
+          <th width="60%">Word</th>
+          <th width="20%">Relevance</th>
+          <th width="20%">Frequency</th>
+        </tr>
+
+        {% for kw in des_keywords %}
+        <tr>
+          <td>{{kw.word}}</td>
+          <td>{{"{0:.2f}".format(kw.score)}}</td>
+          <td>{{kw.frequency}}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </p>
+    {% endif %}
+  </ul>
 </div>
 {% endblock %}

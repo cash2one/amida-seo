@@ -200,3 +200,13 @@ table#keywords th {
     background-color:white;
     color: black;
 }
+
+.searchtype{
+    margin-top: 1em;
+    margin-bottom : 1em;
+    color: white !important;
+    font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-weight: normal;
+    text-rendering: optimizelegibility;
+}
+

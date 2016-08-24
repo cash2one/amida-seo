@@ -33,6 +33,12 @@ BROWSERS = (
     'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'
 )
 
+MOBILES = (
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 9_3 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13E188a Safari/601.1',
+    'Mozilla/5.0 (Linux; Android 4.0.4; Galaxy Nexus Build/IMM76B) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.133 Mobile Safari/535.19',
+    'Mozilla/5.0 (iPad; CPU OS 9_3 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13E188a Safari/601.1'
+)
+
 TIMEOUT = 5  # socket timeout
 
 class BrowserError(Exception):
@@ -97,6 +103,11 @@ class Browser(object):
             raise
         except:
             raise BrowserError(url, "unknown error")
+
+    
+    def set_random_user_mobile_agent(self):
+        self.headers['User-Agent'] = random.choice(MOBILES)
+        return self.headers['User-Agent']
 
     def set_random_user_agent(self):
         self.headers['User-Agent'] = random.choice(BROWSERS)
