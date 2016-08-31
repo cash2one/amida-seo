@@ -51,3 +51,6 @@ def show_result():
             return render_template('show_entries.html', keyword=keyword, selectedcountry=country, title_keywords=title_keywords, des_keywords=des_keywords, content_keywords=content_keywords, selectedst=searchtype)
         except Exception, e:
             return render_template('show_entries.html', keyword=keyword, selectedcountry=country, error=e)
+
+if __name__ == "__main__":
+	app.run()

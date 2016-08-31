@@ -7,14 +7,19 @@ import os
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash
 from sgoogle.keywordanalyser import KeywordAnalyser
-
 import sys  
 
 reload(sys)  
 sys.setdefaultencoding('utf8')
 
+#configuration
+MONGODB_HOST = 'localhost'
+MONGODB_PORT = 27017
+MONGODB_DB = 'amida_seo'
+
 # create our little application :)
 app = Flask(__name__)
+app.config.from_object(__name__)
 
 @app.route('/')
 def show_entries():
@@ -22,7 +27,7 @@ def show_entries():
 
 @app.route('/', methods=['POST'])
 def show_result():
-   searchtype = request.form['searchtype'].encode('utf8')
+    searchtype = request.form['searchtype'].encode('utf8')
     country = request.form['country']
     if country == 'com':
         language = 'en'
