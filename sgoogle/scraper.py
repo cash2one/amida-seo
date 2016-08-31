@@ -11,7 +11,6 @@ import urllib2
 from datetime import datetime
 import lxml
 from htmlentitydefs import name2codepoint
-from bs4 import BeautifulSoup, SoupStrainer
 from Queue import Queue
 from browser import Browser, BrowserError
 import ssl
