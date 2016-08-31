@@ -61,33 +61,15 @@ class ScraperResult(object):
 
 class KeywordAnalyser(object):
     def __init__(self, query, numofresults=10, numberofkeywords=50, lang="en", tld="com", mobile=False):
-
-        if mobile:
-            random_agent = False
-        else:
-            random_agent = True
-
         self.query = query
         self.numberofkeywords = numberofkeywords
-        self.scraper = GoogleScraper(query, random_agent=random_agent, debug=True, lang=lang, tld=tld, mobile=mobile)
+        self.scraper = GoogleScraper(query, debug=True, lang=lang, tld=tld, mobile=mobile)
         self.scraper.results_per_page = numofresults
         self.stoplist = justext.get_stoplist("Japanese")
 
     def scrap_data(self):
         """Scrap data from google search results"""
-        sresults = self.scraper.get_results()
-        urls = []
-        titles = []
-        descriptions = []
-        contents = []
-
-        for result in sresults:
-            urls.append(result.url)
-            titles.append(result.title)
-            descriptions.append(result.desc)
-            contents.append(result.content)
-        
-        return ScraperResult(urls,titles,descriptions,contents)
+        return self.scraper.get_results()
     
     def extract_keyword_en(self, corpus_text, min_len=4, max_len=50):
         alchemyapi = AlchemyAPI(ALCHEMY_API_KEY)
@@ -98,13 +80,12 @@ class KeywordAnalyser(object):
         if response['status'] == "OK":
             for keyword in response['keywords']:
                 phrase = keyword['text'].encode('utf8')
-                if phrase.lower() != self.query.lower() and len(phrase) >= min_len and len(phrase) <= max_len:
+                freq = self.phrase_frequency(phrase, corpus_text)
+                if freq > 0 and phrase.lower() != self.query.lower() and len(phrase) >= min_len and len(phrase) <= max_len:
                     score = float(keyword['relevance'].encode('utf8'))
-                    freq = self.phrase_frequency(phrase, corpus_text)
                     kw = Keyword(phrase, score, freq)
                     keywords.append(kw)
 
-        
         return keywords[:min(len(keywords), self.numberofkeywords)]
 
 
@@ -198,8 +179,8 @@ class KeywordAnalyser(object):
             katamatch = re.search(KATA, phrase, re.U)
             if not kanjimatch and not hiramatch and not katamatch:
                 continue
-            if (len(phrase) >= min_len) and (len(phrase) <= max_len) and (phrase not in self.stoplist) and (phrase.lower() != self.query.lower()):
-                freq = self.phrase_frequency(phrase, corpus_text)
+            freq = self.phrase_frequency(phrase, corpus_text)
+            if (freq > 0) and (len(phrase) >= min_len) and (len(phrase) <= max_len) and (phrase not in self.stoplist) and (phrase.lower() != self.query.lower()):
                 kw = Keyword(phrase, float(s)/101, freq)
                 if kw not in keywords:
                     keywords.append(kw)
@@ -218,8 +199,8 @@ class KeywordAnalyser(object):
                 katamatch = re.search(KATA, phrase, re.U)
                 if not kanjimatch and not hiramatch and not katamatch:
                     continue
-                if (len(phrase) >= min_len) and (len(phrase) <= max_len) and (phrase not in self.stoplist) and (phrase.lower() != self.query.lower()):
-                    freq = self.phrase_frequency(phrase, corpus_text)
+                freq = self.phrase_frequency(phrase, corpus_text)
+                if (freq > 0) and (len(phrase) >= min_len) and (len(phrase) <= max_len) and (phrase not in self.stoplist) and (phrase.lower() != self.query.lower()):
                     kw = Keyword(phrase, float(s)/101, freq)
                     if kw not in keywords:
                         keywords.append(kw)

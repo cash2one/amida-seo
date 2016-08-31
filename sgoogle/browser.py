@@ -17,6 +17,7 @@ BROWSERS = (
     #  awk -F\" '{B[$6]++} END { for (b in B) { print B[b] ": " b } }' |
     #  sort -rn |
     #  head -20
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/601.6.17 (KHTML, like Gecko) Version/9.1.1 Safari/601.6.17',
     'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.6) Gecko/2009011913 Firefox/3.0.6',
     'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.0.6) Gecko/2009011912 Firefox/3.0.6',
     'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.6) Gecko/2009011913 Firefox/3.0.6 (.NET CLR 3.5.30729)',
@@ -39,7 +40,7 @@ MOBILES = (
     'Mozilla/5.0 (iPad; CPU OS 9_3 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13E188a Safari/601.1'
 )
 
-TIMEOUT = 5  # socket timeout
+TIMEOUT = 600  # socket timeout
 
 class BrowserError(Exception):
     def __init__(self, url, error):
@@ -89,9 +90,9 @@ class Browser(object):
         if data: data = urllib.urlencode(data)
         request = urllib2.Request(url, data, self.headers)
         try:
-            #response = opener.open(request)
-            sslcontext = ssl._create_unverified_context()
-            response = urllib2.urlopen(request, context=sslcontext)
+            response = opener.open(request)
+            '''sslcontext = ssl._create_unverified_context()
+            response = urllib2.urlopen(request, context=sslcontext)'''
             return response.read()
         except (urllib2.HTTPError, urllib2.URLError), e:
             raise BrowserError(url, str(e))
@@ -105,8 +106,8 @@ class Browser(object):
             raise BrowserError(url, "unknown error")
 
     
-    def set_random_user_mobile_agent(self):
-        self.headers['User-Agent'] = random.choice(MOBILES)
+    def set_user_mobile_agent(self):
+        self.headers['User-Agent'] = MOBILES[0]
         return self.headers['User-Agent']
 
     def set_random_user_agent(self):
