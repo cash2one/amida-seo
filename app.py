@@ -24,7 +24,7 @@ app.config.from_object(__name__)
 
 @app.route('/')
 def show_entries():
-    return render_template('show_entries.html', selectedst='ds')
+    return render_template('show_entries.html', selectedst='ds', selectedcountry='co.jp')
 
 @app.route('/', methods=['POST'])
 def show_result():
@@ -41,7 +41,7 @@ def show_result():
     keyword = request.form['keyword'].encode('utf8')
 
     if keyword == '':
-        return render_template('show_entries.html', error="You did not enter a keyword!")
+        return render_template('show_entries.html', keyword=keyword, selectedcountry=country, selectedst=searchtype, error="You did not enter a keyword!")
     else:
         try:
             startTime0 = datetime.now()
@@ -55,7 +55,7 @@ def show_result():
             print "Total processing time: %f" %((datetime.now() - startTime0).total_seconds())
             return render_template('show_entries.html', keyword=keyword, selectedcountry=country, title_keywords=title_keywords, des_keywords=des_keywords, content_keywords=content_keywords, selectedst=searchtype)
         except Exception, e:
-            return render_template('show_entries.html', keyword=keyword, selectedcountry=country, error=e)
+            return render_template('show_entries.html', keyword=keyword, selectedcountry=country, selectedst=searchtype, error=e)
 
 if __name__ == "__main__":
 	app.run()
