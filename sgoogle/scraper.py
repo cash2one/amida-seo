@@ -21,6 +21,7 @@ import justext
 import logging
 import sys
 from scrapy.selector import Selector
+from concurrent.futures import ThreadPoolExecutor, wait, as_completed
 
 reload(sys)  
 sys.setdefaultencoding('utf8')
@@ -165,7 +166,7 @@ class GoogleScraper(object):
         startTime = datetime.now()
         page = self._get_results_page()
         runtime = datetime.now() - startTime
-        print runtime
+        print "Getting Google Search Results in: %f seconds" % (runtime.total_seconds())
         if self.mobile:
             results = self._extract_mobile_results(page)
         else:
@@ -210,11 +211,7 @@ class GoogleScraper(object):
         return page
 
     def _extract_results(self, page):
-        '''soup = BeautifulSoup(page, "lxml")
-        results = soup.findAll('div', {'class': 'g'})
-        titles, urls = self._extract_title_url(results)
-        descs = self._extract_description(results)'''
-        
+        startTime = datetime.now()
         try:
             sel = Selector(text=page)
             titles = sel.xpath(TITLE_XPATH_DESKTOP).extract()
@@ -225,15 +222,15 @@ class GoogleScraper(object):
 
         if not titles or not urls or not descs:
             return None
-        startTime = datetime.now()
         cpu_count = multiprocessing.cpu_count()
-        contents = self._extract_content_multiprocessing(urls, processes=cpu_count)
+        contents = self._extract_content_multiprocessing(urls, workers=cpu_count)
         runtime = datetime.now() - startTime
-        print runtime
+        print "Extracting data in: %f seconds" % (runtime.total_seconds())
         return SearchResult(titles, urls, descs, contents)
 
 
     def _extract_mobile_results(self, page):
+        startTime = datetime.now()
         try:
             sel = Selector(text=page)
             titles = sel.xpath(TITLE_XPATH_MOBILE).extract()
@@ -244,11 +241,10 @@ class GoogleScraper(object):
         
         if not titles or not urls or not descs:
             return None
-        startTime = datetime.now()
         cpu_count = multiprocessing.cpu_count()
-        contents = self._extract_content_multiprocessing(urls, processes=cpu_count)
+        contents = self._extract_content_multiprocessing(urls, workers=cpu_count)
         runtime = datetime.now() - startTime
-        print runtime
+        print "Extracting data in: %f seconds" % (runtime.total_seconds())
         return SearchResult(titles, urls, descs, contents)
 
     def _extract_title_url(self, results):
@@ -281,8 +277,35 @@ class GoogleScraper(object):
                     descs.append(self._html_unescape(desc))
         return descs      
     
-    def _extract_content_multiprocessing(self, urls, processes=4):
-        p = Pool(processes)
+    # Using ThreadPoolExecutor
+    def _extract_content_threadpoolexecutor(self, urls, workers=10):
+        
+        def crawl_url(url):
+            content = ''
+            try:
+                request = urllib2.Request(url)
+                page = urllib2.urlopen(request).read()
+                if page:
+                    paragraphs = justext.justext(page, [], stopwords_high=0, stopwords_low = 0, length_low=LENGTH_LOW_DEFAULT)
+                    text = [para.text for para in paragraphs if not para.is_boilerplate]
+                    content = '\n'.join(text)
+            except Exception as e:
+                return ''    
+            return content
+        contents = []
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            future_to_url = {executor.submit(crawl_url, url): url for url in urls}
+            for future in as_completed(future_to_url):
+                try:
+                    content = future.result()
+                    contents.append(content)
+                except Exception as e:
+                    print e
+        return contents
+    
+    #Using Process
+    def _extract_content_multiprocessing(self, urls, workers=4):
+        p = Pool(workers)
         sc = Scrapper()
         contents = p.map(sc.crawl_url, urls)
         return contents
@@ -316,5 +339,5 @@ class Scrapper(object):
                 text = [para.text for para in paragraphs if not para.is_boilerplate]
                 content = '\n'.join(text)
         except Exception as e:
-            return ''    
+            pass   
         return content

@@ -190,20 +190,20 @@ class KeywordAnalyser(object):
     def get_important_keyphrases_from_multiple_docs_yahoo(self, corpus, corpus_text, min_len=3, max_len=20):
         api = YahooAPI(YAHOO_APP_KEY)
         keywords = []
-
         for cor in corpus:
             res = api.keyphrases(cor)
-            for phrase, s in res.iteritems():
-                kanjimatch = re.search(KANJI, phrase, re.U)
-                hiramatch = re.search(HIRA, phrase, re.U)
-                katamatch = re.search(KATA, phrase, re.U)
-                if not kanjimatch and not hiramatch and not katamatch:
-                    continue
-                freq = self.phrase_frequency(phrase, corpus_text)
-                if (freq > 0) and (len(phrase) >= min_len) and (len(phrase) <= max_len) and (phrase not in self.stoplist) and (phrase.lower() != self.query.lower()):
-                    kw = Keyword(phrase, float(s)/101, freq)
-                    if kw not in keywords:
-                        keywords.append(kw)
+            if res:
+                for phrase, s in res.iteritems():
+                    kanjimatch = re.search(KANJI, phrase, re.U)
+                    hiramatch = re.search(HIRA, phrase, re.U)
+                    katamatch = re.search(KATA, phrase, re.U)
+                    if not kanjimatch and not hiramatch and not katamatch:
+                        continue
+                    freq = self.phrase_frequency(phrase, corpus_text)
+                    if (freq > 0) and (len(phrase) >= min_len) and (len(phrase) <= max_len) and (phrase not in self.stoplist) and (phrase.lower() != self.query.lower()):
+                        kw = Keyword(phrase, float(s)/101, freq)
+                        if kw not in keywords:
+                            keywords.append(kw)
         keywords.sort(key=lambda x: x.score, reverse=True)
         return keywords[:min(len(keywords), self.numberofkeywords)]
 
