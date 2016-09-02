@@ -37,8 +37,13 @@
 
     <!--Relevance keywords from contents-->
     {% if content_keywords %}
+    <table>
+        <tr>
+          <th width="80%"><strong>Relevance keywords from search results' contents:</strong></th>
+          <th width= "20%"><a download="relevantkeywords.xls" href="#" onclick="return ExcellentExport.excel(this, 'keywords', 'Sheet1');">Export to Excel</a></th>
+        </tr>
+      </table>
     <p>
-      <strong>Relevance keywords from search results' contents:</strong>
       <table id="keywords">
         <tr>
           <th width="60%">Word</th>
@@ -48,7 +53,7 @@
 
         {% for kw in content_keywords %}
         <tr>
-          <td>{{kw.word}}</td>
+          <td><a href="{{kw.url}}" target="_blank">{{kw.word}}</a></td>
           <td>{{"{0:.2f}".format(kw.score)}}</td>
           <td>{{kw.frequency}}</td>
         </tr>

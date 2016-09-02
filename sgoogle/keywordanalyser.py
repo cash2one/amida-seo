@@ -31,6 +31,15 @@ class Frequency(object):
     def __str__(self):
         return "the word '%s' appears in the title '%s' %s times" % (self.word, self.title, self.frequency)
 
+class KeywordwithURL(object):
+    def __init__(self, word, score, frequency, url):
+        self.word = word
+        self.score = score
+        self.frequency = frequency
+        self.url = url
+    def __str__(self):
+        return "Keyword word '%s' appear in: %s" % (self.word, self.url)
+
 
 class Keyword(object):
     def __init__(self, word, score, frequency):
@@ -151,12 +160,11 @@ class KeywordAnalyser(object):
     def extract_keyword_jp_yahoo(self, corpus):
         MAX_DOC_SIZE = 10000
         try:
-            corpus_text = "\n".join(corpus)
-            size = sys.getsizeof(corpus_text)
+            size = sys.getsizeof(corpus)
             if size < MAX_DOC_SIZE:
-                keywords = self.get_important_keyphrases_from_single_doc_yahoo(corpus_text)
+                keywords = self.get_important_keyphrases_from_single_doc_yahoo(corpus)
             else:
-                lines = corpus_text.splitlines()
+                lines = corpus.splitlines()
                 nochunks = size / MAX_DOC_SIZE + 1
                 noflines = len(lines) / nochunks
                 chunks = [lines[x:x+noflines] for x in range(0, len(lines), noflines)]
@@ -164,7 +172,7 @@ class KeywordAnalyser(object):
                 for chunk in chunks:
                     cor = '\n'.join(chunk)
                     docs.append(cor)
-                keywords = self.get_important_keyphrases_from_multiple_docs_yahoo(docs, corpus_text)
+                keywords = self.get_important_keyphrases_from_multiple_docs_yahoo(docs, corpus)
         except Exception as e:
             raise e
         return keywords
@@ -197,7 +205,7 @@ class KeywordAnalyser(object):
                     kanjimatch = re.search(KANJI, phrase, re.U)
                     hiramatch = re.search(HIRA, phrase, re.U)
                     katamatch = re.search(KATA, phrase, re.U)
-                    if not kanjimatch and not hiramatch and not katamatch:
+                    if (not kanjimatch and not hiramatch and not katamatch) or ('�' in phrase):
                         continue
                     freq = self.phrase_frequency(phrase, corpus_text)
                     if (freq > 0) and (len(phrase) >= min_len) and (len(phrase) <= max_len) and (phrase not in self.stoplist) and (phrase.lower() != self.query.lower()):
@@ -208,25 +216,26 @@ class KeywordAnalyser(object):
         return keywords[:min(len(keywords), self.numberofkeywords)]
 
     def extract_keywords(self, corpus, title=False, des=False, content=False, lang='en'):
-        corpus_text = "\n".join(corpus)
-        #Todo: Set threshold to filter keywords
-        '''threshold = 0
-        if title:
-            threshold = 0.2
-        if des:
-            threshold = 0.4
         if content:
-            checktext = max(corpus)
-        checktext = corpus_text
-        alchemyapi = AlchemyAPI(ALCHEMY_API_KEY)
-        res = alchemyapi.language('text', checktext)
-        lang = ''
-        if res['status'] == 'OK':
-            lang = res['language']'''
+            contents = [c.text for c in corpus]
+            corpus_text = "\n".join(contents)
+        else: 
+            corpus_text = "\n".join(corpus)
         if lang == "ja":
-            return self.extract_keyword_jp_yahoo(corpus)
+            keywords = self.extract_keyword_jp_yahoo(corpus_text)
         else:
-            return self.extract_keyword_en(corpus_text)
+            keywords = self.extract_keyword_en(corpus_text)
+
+        if content:
+            finalkeywords = [KeywordwithURL(k.word,k.score,k.frequency,self.find_url_contain(k.word,corpus)) for k in keywords]
+            return finalkeywords
+        else:
+            return keywords
+    
+    def find_url_contain(self, word, corpus):
+        for c in corpus:
+            if word.lower() in c.text.lower():
+                return c.url
 
     def phrase_frequency(self, phrase, text):
         lines = text.lower().splitlines()

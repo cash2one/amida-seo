@@ -2,3 +2,10 @@ Flask==0.10.1
 requests
 lxml
 justext
+Scrapy
+pathos
+boilerpipe
+Jpype
+charade
+pymongo
+jsonpickle

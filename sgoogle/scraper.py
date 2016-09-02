@@ -22,6 +22,7 @@ import logging
 import sys
 from scrapy.selector import Selector
 from concurrent.futures import ThreadPoolExecutor, wait, as_completed
+# from boilerpipe.extract import Extractor
 
 reload(sys)  
 sys.setdefaultencoding('utf8')
@@ -69,6 +70,20 @@ class SearchResult:
 
     def __str__(self):
         return 'Google Search Result: "%s"' % self.titles
+
+class URLResult:
+    def __init__(self, url, searchorder):
+        self.url = url
+        self.searchorder = searchorder
+    def __str__(self):
+        return self.url
+
+class Content:
+    def __init__(self, url, text):
+        self.url = url
+        self.text = text
+    def __str__(self):
+        return self.text
 
 class GoogleScraper(object):
     SEARCH_URL_0 = "http://www.google.%(tld)s/search?hl=%(lang)s&q=%(query)s&btnG=Google+Search"
@@ -221,7 +236,7 @@ class GoogleScraper(object):
             print None
 
         if not titles or not urls or not descs:
-            return None
+            return None       
         cpu_count = multiprocessing.cpu_count()
         contents = self._extract_content_multiprocessing(urls, workers=cpu_count)
         runtime = datetime.now() - startTime
@@ -245,52 +260,18 @@ class GoogleScraper(object):
         contents = self._extract_content_multiprocessing(urls, workers=cpu_count)
         runtime = datetime.now() - startTime
         print "Extracting data in: %f seconds" % (runtime.total_seconds())
-        return SearchResult(titles, urls, descs, contents)
-
-    def _extract_title_url(self, results):
-        titles = []
-        urls = []
-        for result in results:
-            if(result.find('span', {'class': 'st'})):
-                title_h = result.find('h3', {'class':'r'})
-                if title_h:   
-                    title_a = title_h.find('a')
-                    title = ''.join(title_a.findAll(text=True))
-                    title = self._html_unescape(title)
-                    url = title_a['href']
-                    if not url.startswith('http'):
-                        match = re.match(r'/url\?q=(http[^&]+)&', url)
-                        if match:
-                            url = urllib.unquote(match.group(1))
-                    if url.startswith('http'):
-                        titles.append(title)
-                        urls.append(url)
-        return titles, urls
+        return SearchResult(titles, urls, descs, contents)     
     
-    def _extract_description(self, results):
-        descs = []
-        for result in results:
-            if(result.find('span', {'class': 'st'})):
-                desc_span = result.find('span', {'class': 'st'})
-                if desc_span:
-                    desc = ''.join(desc_span.findAll(text=True))
-                    descs.append(self._html_unescape(desc))
-        return descs      
-    
-    # Using ThreadPoolExecutor
+    '''# Using ThreadPoolExecutor and boilerpipe
     def _extract_content_threadpoolexecutor(self, urls, workers=10):
         
         def crawl_url(url):
             content = ''
             try:
-                request = urllib2.Request(url)
-                page = urllib2.urlopen(request).read()
-                if page:
-                    paragraphs = justext.justext(page, [], stopwords_high=0, stopwords_low = 0, length_low=LENGTH_LOW_DEFAULT)
-                    text = [para.text for para in paragraphs if not para.is_boilerplate]
-                    content = '\n'.join(text)
+                extractor = Extractor(extractor='DefaultExtractor', url=url)
+                content = extractor.getText()
             except Exception as e:
-                return ''    
+                pass
             return content
         contents = []
         with ThreadPoolExecutor(max_workers=workers) as executor:
@@ -301,13 +282,13 @@ class GoogleScraper(object):
                     contents.append(content)
                 except Exception as e:
                     print e
-        return contents
+        return contents'''
     
     #Using Process
-    def _extract_content_multiprocessing(self, urls, workers=4):
+    def _extract_content_multiprocessing(self, urlresults, workers=4):
         p = Pool(workers)
         sc = Scrapper()
-        contents = p.map(sc.crawl_url, urls)
+        contents = p.map(sc.crawl_url, urlresults)
         return contents
 
     def _html_unescape(self, str):
@@ -330,14 +311,14 @@ class GoogleScraper(object):
 
 class Scrapper(object):
     def crawl_url(self, url):
-        content = ''
+        content = Content('','')
         try:
             request = urllib2.Request(url)
             page = urllib2.urlopen(request).read()
             if page:
                 paragraphs = justext.justext(page, [], stopwords_high=0, stopwords_low = 0, length_low=LENGTH_LOW_DEFAULT)
                 text = [para.text for para in paragraphs if not para.is_boilerplate]
-                content = '\n'.join(text)
+                content = Content(url, '\n'.join(text))
         except Exception as e:
             pass   
         return content
