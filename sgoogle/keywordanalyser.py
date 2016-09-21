@@ -15,9 +15,8 @@ import sys
 import justext
 import re
 
-ALCHEMY_API_KEY = "27a8e38142c6a48ea64a4c387be8f6da88cb4d1d"
-AZURE_API_KEY = "7bcb2e6d08b9421dad41aebadf5761fa"
-YAHOO_APP_KEY = "dj0zaiZpPTAxd2RIWGhiWUtyTyZzPWNvbnN1bWVyc2VjcmV0Jng9Y2M-"
+ALCHEMY_API_KEY = "Enter your alchemy api key"
+YAHOO_APP_KEY = "Enter your yahoo api key"
 KANJI = u'[\u4E00-\u9FFF]+'
 HIRA = u'[\u3040-\u309Fー]+'
 KATA = u'[\u30A0-\u30FF]+'
@@ -116,45 +115,6 @@ class KeywordAnalyser(object):
                 keywords = self.get_important_keyphrases_from_multiple_docs("ja", corpus, size, corpus_text)
         except Exception as e:
             raise e
-        return keywords
-    
-    def get_important_keyphrases_from_single_doc(self, lang, corpus_text, min_len=3, max_len=20):
-        api = AzureAPI(AZURE_API_KEY)
-        keywords = []
-        res = api.keyphrases(lang, [corpus_text])
-        keyphrases = res["documents"][0]["keyPhrases"]
-        for phrase in keyphrases:
-            kanjimatch = re.search(KANJI, phrase, re.U)
-            hiramatch = re.search(HIRA, phrase, re.U)
-            katamatch = re.search(KATA, phrase, re.U)
-            if not kanjimatch and not hiramatch and not katamatch:
-                continue
-            if (len(phrase) >= min_len) and (len(phrase) <= max_len) and (phrase not in self.stoplist) and (phrase.lower() != self.query.lower()):
-                score = self.phrase_frequency(phrase, corpus_text)
-                kw = Keyword(phrase, score)
-                if kw not in keywords:
-                    keywords.append(kw)
-        return keywords[:min(len(keywords), self.numberofkeywords)]
-
-    def get_important_keyphrases_from_multiple_docs(self, lang, corpus, size, corpus_text, min_len=3, max_len=20):
-        api = AzureAPI(AZURE_API_KEY)
-        keywords = []
-        nofwords = size / 10000
-        res = api.keyphrases(lang, corpus)
-        docs = res["documents"]
-        for doc in docs:
-            keyphrases = doc["keyPhrases"]
-            for phrase in keyphrases[:nofwords]:
-                kanjimatch = re.search(KANJI, phrase, re.U)
-                hiramatch = re.search(HIRA, phrase, re.U)
-                katamatch = re.search(KATA, phrase, re.U)
-                if not kanjimatch and not hiramatch and not katamatch:
-                    continue
-                if (len(phrase) >= min_len) and (len(phrase) <= max_len) and (phrase not in self.stoplist) and (phrase.lower() != self.query.lower()):
-                    score = self.phrase_frequency(phrase, corpus_text)
-                    kw = Keyword(phrase, score)
-                    if kw not in keywords:
-                        keywords.append(kw)
         return keywords
 
     def extract_keyword_jp_yahoo(self, corpus):

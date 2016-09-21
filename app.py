@@ -49,7 +49,7 @@ def show_result():
     else:
         db = client[app.config[('MONGODB_DB')]]
         coll = db.relevant_keywords
-        keyword_exist = coll.find_one({"keyword":keyword, "searchtype":searchtype})
+        keyword_exist = coll.find_one({"keyword":keyword, "searchtype":searchtype, "country":country})
         if keyword_exist:
             content_keywords = jsonpickle.decode(keyword_exist['content_keywords'])
             title_keywords = None
@@ -67,7 +67,7 @@ def show_result():
                 print "Extracting Keywords in: %f" %((datetime.now() - startTime1).total_seconds())
                 print "Total processing time: %f" %((datetime.now() - startTime0).total_seconds())
 
-                re_keywords = {"keyword":keyword, "searchtype":searchtype, "content_keywords":jsonpickle.encode(content_keywords)}
+                re_keywords = {"keyword":keyword, "searchtype":searchtype, "country":country, "content_keywords":jsonpickle.encode(content_keywords)}
                 coll.insert(re_keywords)
 
                 return render_template('show_entries.html', keyword=keyword, selectedcountry=country, title_keywords=title_keywords, des_keywords=des_keywords, content_keywords=content_keywords, selectedst=searchtype)

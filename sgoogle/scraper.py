@@ -21,8 +21,9 @@ import justext
 import logging
 import sys
 from scrapy.selector import Selector
-from concurrent.futures import ThreadPoolExecutor, wait, as_completed
+#from concurrent.futures import ThreadPoolExecutor, wait, as_completed
 # from boilerpipe.extract import Extractor
+import eventlet
 
 reload(sys)  
 sys.setdefaultencoding('utf8')
@@ -289,6 +290,14 @@ class GoogleScraper(object):
         p = Pool(workers)
         sc = Scrapper()
         contents = p.map(sc.crawl_url, urlresults)
+        return contents
+
+    def _extract_content_eventlet(self, urls):
+        pool = eventlet.GreenPool()
+        sc = Scrapper()
+        contents = []
+        for content in pool.imap(sc.crawl_url, urls):
+            contents.append(content)
         return contents
 
     def _html_unescape(self, str):
