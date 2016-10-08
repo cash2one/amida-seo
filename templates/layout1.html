@@ -1,0 +1,25 @@
+<!doctype html>
+<title>AmidA Kyoto Office</title>
+<script type="text/javascript"
+  src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js">
+</script>
+<script type="text/javascript" 
+  src="{{ url_for('static', filename='excellentexport.js') }}">
+</script>
+<script type="text/javascript">
+  var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+<div class="page">
+  <div class="banner">
+  <h3 class="banner-product-title align-center">AmidA SEO </h3>
+
+  <h1 class="banner-title text-white align-center">Google Index Checker</h1>
+
+  <h4 class="text-white align-center banner-subtitle"> A tool to check links have been indexed by Google</h4>
+  {% for message in get_flashed_messages() %}
+    <div class="flash">{{ message }}</div>
+  {% endfor %}
+  {% block body %}{% endblock %}
+</div>

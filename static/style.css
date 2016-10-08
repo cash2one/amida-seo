@@ -140,7 +140,7 @@ div {
 
 .button-primary {
     border-style: solid;
-    border-width: 1px 0;
+    border-width: 0px 0;
     height: 40px;
     line-height: 38px;
     transition-duration: 0.1s;
@@ -208,5 +208,22 @@ table#keywords th {
     font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
     font-weight: normal;
     text-rendering: optimizelegibility;
+}
+
+.file_input {
+    color: white !important;
+    font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-weight: normal;
+    font-size: 14px;
+    text-align: center;
+    text-decoration: none !important;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.btn-file-input {
+    display: inline-block;
+    width: 200px;
+    height: 40px;
 }
 

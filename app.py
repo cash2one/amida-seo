@@ -7,10 +7,13 @@ import os
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash
 from sgoogle.keywordanalyser import KeywordAnalyser
+from sgoogle.googleindexchecker import IndexChecker
 from datetime import datetime
 import sys
 from pymongo import MongoClient
 import jsonpickle
+import os
+from werkzeug.utils import secure_filename
 
 reload(sys)  
 sys.setdefaultencoding('utf8')
@@ -20,9 +23,13 @@ MONGODB_HOST = 'localhost'
 MONGODB_PORT = 27017
 MONGODB_DB = 'amida_seo'
 
+UPLOAD_FOLDER = '/tmp'
+ALLOWED_EXTENSIONS = set(['txt'])
+
 # create our little application :)
 app = Flask(__name__)
 app.config.from_object(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 client = MongoClient(app.config['MONGODB_HOST'], app.config['MONGODB_PORT'])
 
@@ -73,6 +80,33 @@ def show_result():
                 return render_template('show_entries.html', keyword=keyword, selectedcountry=country, title_keywords=title_keywords, des_keywords=des_keywords, content_keywords=content_keywords, selectedst=searchtype)
             except Exception, e:
                 return render_template('show_entries.html', keyword=keyword, selectedcountry=country, selectedst=searchtype, error=e)
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+@app.route('/googleindexchecker')
+def show_index_checker():
+    return render_template('index_check.html')
+
+
+@app.route('/googleindexchecker', methods=['POST'])
+def check_result():
+    file = request.files['file']
+    if file.filename == '':
+        return render_template('index_check.html', error='No selected file')
+    
+    if not allowed_file(file.filename):
+        return render_template('index_check.html', error='File type is not supported')
+    
+    if file and allowed_file(file.filename):
+        urlstr = file.read()
+        urls = urlstr.split()
+        checker = IndexChecker(urls)
+        urlchecked = checker.check()
+        return render_template('index_check.html', urlindexchecks=urlchecked)
+
+
 
 if __name__ == "__main__":
 	app.run()

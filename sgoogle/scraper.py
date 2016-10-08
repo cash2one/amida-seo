@@ -174,6 +174,17 @@ class GoogleScraper(object):
 
     results_per_page = property(_get_results_per_page, _set_results_par_page)
 
+    
+    def get_google_search_result(self):
+        if self.eor:
+            return []
+        startTime = datetime.now()
+        page = self._get_results_page()
+        sel = Selector(text=page)
+        titles = sel.xpath(TITLE_XPATH_DESKTOP).extract()
+        return titles
+
+    
     def get_results(self):
         """ Gets a page of results """
         if self.eor:

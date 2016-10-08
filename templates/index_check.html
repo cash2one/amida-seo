@@ -1,0 +1,62 @@
+{% extends "layout1.html" %} {% block body %}
+<script type="text/javascript">// <![CDATA[
+        function loading(){
+            $("#loading").show();
+            $("#content").hide();       
+        }
+// ]]></script>
+<div class="banner-search-bar">
+  <form action="{{ url_for('check_result') }}" method="post" enctype=multipart/form-data>
+    <div class="myinput-container">
+      <table>
+        <tr>
+          <th width="10%"></th>
+          <th width="40%">
+            <div class="button-primary">
+              <input type="file" name="file" class="file_input">
+            </div>
+          </th>
+          <th width= "20%">
+            <input type="submit" class="button-primary large-cta yellow wide-cta" value="Check" onclick="loading();">
+          </th>
+          <th width="10%"></th>
+        </tr>
+      </table>
+    </div>
+  </form>
+</div>
+</div>
+<div id="loading"> </div>
+
+<div id="content">
+  <ul class="entries">
+    {% if error %}
+    <p><strong>{{error}}</strong></p>
+    {% endif %}
+
+    <!--Relevance keywords from contents-->
+    {% if urlindexchecks %}
+    <table>
+        <tr>
+          <th width="80%"><strong>URL Indexed check:</strong></th>
+          <th width= "20%"><a download="urlindexchecked.xls" href="#" onclick="return ExcellentExport.excel(this, 'urlchecked', 'Sheet1');">Export to Excel</a></th>
+        </tr>
+      </table>
+    <p>
+      <table id="urlchecked">
+        <tr>
+          <th width="80%">URL</th>
+          <th width="20%">Indexed</th>
+        </tr>
+        {% for urlin in urlindexchecks %}
+        <tr>
+          <td><a href="{{urlin.url}}" target="_blank">{{urlin.url}}</a></td>
+          <td>{{urlin.indexed}}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </p>
+    {% endif %}
+  </ul>
+</div>
+{% endblock %}
