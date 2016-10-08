@@ -102,7 +102,7 @@ def check_result():
     if file and allowed_file(file.filename):
         urlstr = file.read()
         urls = urlstr.split()
-        checker = IndexChecker(urls)
+        checker = IndexChecker(urls, tld="co.jp")
         urlchecked = checker.check()
         return render_template('index_check.html', urlindexchecks=urlchecked)
 

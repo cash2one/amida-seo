@@ -27,7 +27,7 @@ class IndexChecker(object):
         checkedurls = []
         for url in self.urls:
             query = 'info:'+url
-            scraper = GoogleScraper(query, debug=True, random_agent=False)
+            scraper = GoogleScraper(query, debug=True, random_agent=False, tld=self.tld)
             titles = scraper.get_google_search_result()
             indexed = 'No'
             if titles:
