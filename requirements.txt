@@ -1,11 +1,13 @@
 Flask==0.10.1
+Jinja2==2.7.3
+Werkzeug==0.10.4
+gunicorn==19.3.0
 requests
 lxml
 justext
 Scrapy
 pathos
-boilerpipe
-Jpype
-charade
 pymongo
 jsonpickle
+beautifulsoup4
+selenium

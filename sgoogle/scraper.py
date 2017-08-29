@@ -29,7 +29,8 @@ sys.setdefaultencoding('utf8')
 
 LENGTH_LOW_DEFAULT = 100
 
-TITLE_XPATH_DESKTOP = '//div[@class="rc"]/h3/a/text()'
+TITLE_XPATH_DESKTOP = '//div[@class="rc" or @class="g"]/h3/a/text()'
+
 URL_XPATH_DESKTOP = '//div[@class="rc"]/h3/a/@href'
 DESC_XPATH_DESKTOP = '//div[@class="rc"]/div[@class="s"]/div/span/text()[last()]'
 
@@ -91,10 +92,10 @@ class GoogleScraper(object):
     SEARCH_URL_1 = "http://www.google.%(tld)s/search?hl=%(lang)s&q=%(query)s&num=%(num)d&btnG=Google+Search"
     NEXT_PAGE_1 = "http://www.google.%(tld)s/search?hl=%(lang)s&q=%(query)s&num=%(num)d&start=%(start)d"
 
-    def __init__(self, query, random_agent=False, debug=False, lang="en", tld="com", re_search_strings=None, mobile=False):
+    def __init__(self, query, random_agent=False, use_proxy=False, debug=False, lang="en", tld="com", re_search_strings=None, mobile=False):
         self.query = query
         self.debug = debug
-        self.browser = Browser(debug=debug)
+        self.browser = Browser(use_proxy=use_proxy)
         self.results_info = None
         self.eor = False # end of results
         self._page = 0
@@ -182,6 +183,18 @@ class GoogleScraper(object):
         sel = Selector(text=page)
         titles = sel.xpath(TITLE_XPATH_DESKTOP).extract()
         return titles
+
+    def is_url_indexed(self):
+        if self.eor:
+            return False 
+        indexed = False
+        page = self._get_results_page()
+        sel = Selector(text=page)
+        result = sel.xpath(TITLE_XPATH_DESKTOP).extract()
+        if result:
+            indexed = True
+        return indexed
+
 
     
     def get_results(self):

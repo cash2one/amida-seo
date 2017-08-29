@@ -102,11 +102,11 @@ def check_result():
     if file and allowed_file(file.filename):
         urlstr = file.read()
         urls = urlstr.split()
-        checker = IndexChecker(urls, tld="co.jp")
-        urlchecked = checker.check()
+        checker = IndexChecker(urls, tld="co.jp", use_proxy=True)
+        urlchecked = checker.check_solenium()
         return render_template('index_check.html', urlindexchecks=urlchecked)
 
 
 
 if __name__ == "__main__":
-	app.run()
+	app.run(debug=True)

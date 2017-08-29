@@ -15,8 +15,8 @@ import sys
 import justext
 import re
 
-ALCHEMY_API_KEY = "Enter your alchemy api key"
-YAHOO_APP_KEY = "Enter your yahoo api key"
+ALCHEMY_API_KEY = "27a8e38142c6a48ea64a4c387be8f6da88cb4d1d"
+YAHOO_APP_KEY = "dj0zaiZpPTAxd2RIWGhiWUtyTyZzPWNvbnN1bWVyc2VjcmV0Jng9Y2M-"
 KANJI = u'[\u4E00-\u9FFF]+'
 HIRA = u'[\u3040-\u309Fー]+'
 KATA = u'[\u30A0-\u30FF]+'

@@ -3,10 +3,10 @@
 from sgoogle.keywordanalyser import KeywordAnalyser
 
 try:
-  ka = KeywordAnalyser("京都")
+  ka = KeywordAnalyser("Kyoto", numofresults=20, lang="en", tld="com", mobile=False)
   scrapresults = ka.scrap_data()
   print "=========Keyword Extract=============="
-  results = ka.extract_keywords(scrapresults.contents)
+  results = ka.extract_keywords(scrapresults.contents, content=True, lang="ja")
   for res in results:
     print "Keyword: %s, score: %s" % (res.word, res.score)
     print

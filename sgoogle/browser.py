@@ -8,31 +8,11 @@ import socket
 import urllib
 import urllib2
 import httplib
+from userAgent import UserAgentManager
+from proxy import ProxyManager
+import requests
 
 import ssl
-
-BROWSERS = (
-    # Top most popular browsers in my access.log on 2009.02.12
-    # tail -50000 access.log |
-    #  awk -F\" '{B[$6]++} END { for (b in B) { print B[b] ": " b } }' |
-    #  sort -rn |
-    #  head -20
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/601.6.17 (KHTML, like Gecko) Version/9.1.1 Safari/601.6.17',
-    'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.6) Gecko/2009011913 Firefox/3.0.6',
-    'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.0.6) Gecko/2009011912 Firefox/3.0.6',
-    'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.6) Gecko/2009011913 Firefox/3.0.6 (.NET CLR 3.5.30729)',
-    'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.6) Gecko/2009020911 Ubuntu/8.10 (intrepid) Firefox/3.0.6',
-    'Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.0.6) Gecko/2009011913 Firefox/3.0.6',
-    'Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.0.6) Gecko/2009011913 Firefox/3.0.6 (.NET CLR 3.5.30729)',
-    'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.19 (KHTML, like Gecko) Chrome/1.0.154.48 Safari/525.19',
-    'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; .NET CLR 3.0.04506.648)',
-    'Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.0.6) Gecko/2009020911 Ubuntu/8.10 (intrepid) Firefox/3.0.6',
-    'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.5) Gecko/2008121621 Ubuntu/8.04 (hardy) Firefox/3.0.5',
-    'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_6; en-us) AppleWebKit/525.27.1 (KHTML, like Gecko) Version/3.2.1 Safari/525.27.1',
-    'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322)',
-    'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 2.0.50727)',
-    'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'
-)
 
 MOBILES = (
     'Mozilla/5.0 (iPhone; CPU iPhone OS 9_3 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13E188a Safari/601.1',
@@ -76,41 +56,53 @@ class PoolHTTPHandler(urllib2.HTTPHandler):
         return self.do_open(PoolHTTPConnection, req)
 
 class Browser(object):
-    def __init__(self, user_agent=BROWSERS[0], debug=False, use_pool=False):
+    def __init__(self, web_proxy_list=[], use_proxy=False):
+        self.userAgent = UserAgentManager()
+        self.use_proxy = use_proxy
         self.headers = {
-            'User-Agent': user_agent,
+            'User-Agent': self.userAgent.get_first_user_agent(),
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Accept-Language': 'en-us,en;q=0.5'
         }
-        self.debug = debug
 
-    def get_page(self, url, data=None):
-        handlers = [PoolHTTPHandler]
-        opener = urllib2.build_opener(*handlers)
-        if data: data = urllib.urlencode(data)
-        request = urllib2.Request(url, data, self.headers)
-        try:
-            response = opener.open(request)
-            '''sslcontext = ssl._create_unverified_context()
-            response = urllib2.urlopen(request, context=sslcontext)'''
-            return response.read()
-        except (urllib2.HTTPError, urllib2.URLError), e:
-            raise BrowserError(url, str(e))
-        except (socket.error, socket.sslerror), msg:
-            raise BrowserError(url, msg)
-        except socket.timeout, e:
-            raise BrowserError(url, "timeout")
-        except KeyboardInterrupt:
-            raise
-        except:
-            raise BrowserError(url, "unknown error")
-
-    
     def set_user_mobile_agent(self):
         self.headers['User-Agent'] = MOBILES[0]
         return self.headers['User-Agent']
 
     def set_random_user_agent(self):
-        self.headers['User-Agent'] = random.choice(BROWSERS)
+        self.headers['User-Agent'] = self.userAgent.get_random_user_agent()
         return self.headers['User-Agent']
 
+
+    def get_page(self, url, data=None):
+        if self.use_proxy:
+            #proxy = ProxyManager()
+            proxies = {
+                'http':'http://127.0.0.1:8123'
+            }
+            try:
+                data = requests.get(url, headers=self.headers, proxies=proxies)
+                return data.content
+            except Exception as e:
+                raise BrowserError(url, str(e))
+        else:
+            handlers = [PoolHTTPHandler]
+            opener = urllib2.build_opener(*handlers)
+            if data: data = urllib.urlencode(data)
+            request = urllib2.Request(url, data, self.headers)
+            try:
+                #response = urllib2.urlopen(request)
+                response = opener.open(request)
+                '''sslcontext = ssl._create_unverified_context()
+                response = urllib2.urlopen(request, context=sslcontext)'''
+                return response.read()
+            except (urllib2.HTTPError, urllib2.URLError), e:
+                raise BrowserError(url, str(e))
+            except (socket.error, socket.sslerror), msg:
+                raise BrowserError(url, msg)
+            except socket.timeout, e:
+                raise BrowserError(url, "timeout")
+            except KeyboardInterrupt:
+                raise
+            except:
+                raise BrowserError(url, "unknown error")
