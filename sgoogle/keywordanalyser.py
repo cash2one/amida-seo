@@ -14,6 +14,9 @@ from yahooapi import YahooAPI
 import sys
 import justext
 import re
+import json
+from watson_developer_cloud import NaturalLanguageUnderstandingV1
+import watson_developer_cloud.natural_language_understanding.features.v1 as Features
 
 ALCHEMY_API_KEY = "27a8e38142c6a48ea64a4c387be8f6da88cb4d1d"
 YAHOO_APP_KEY = "dj0zaiZpPTAxd2RIWGhiWUtyTyZzPWNvbnN1bWVyc2VjcmV0Jng9Y2M-"
@@ -78,6 +81,33 @@ class KeywordAnalyser(object):
     def scrap_data(self):
         """Scrap data from google search results"""
         return self.scraper.get_results()
+    
+    
+    def extract_keyword_en_watson(self, corpus_text, min_len=4, max_len=50):
+        nlu = NaturalLanguageUnderstandingV1(
+            username="fe685dda-adb0-4ce5-aac3-1b07a755d0e9", 
+            password="RSdlrriH0W0S", 
+            version="2017-02-27")
+
+        response = nlu.analyze(
+            text=corpus_text,
+            features=[
+                Features.Keywords(
+
+                )]
+            )
+        
+        print len(response['keywords'])
+        keywords = []
+        for keyword in response['keywords']:
+            phrase = keyword['text'].encode('utf8')
+            freq = self.phrase_frequency(phrase, corpus_text)
+            if freq > 0 and phrase.lower() != self.query.lower() and len(phrase) >= min_len and len(phrase) <= max_len:
+                score = keyword['relevance']
+                kw = Keyword(phrase, score, freq)
+                keywords.append(kw) 
+
+        return keywords[:min(len(keywords), self.numberofkeywords)]
     
     def extract_keyword_en(self, corpus_text, min_len=4, max_len=50):
         alchemyapi = AlchemyAPI(ALCHEMY_API_KEY)
@@ -184,7 +214,7 @@ class KeywordAnalyser(object):
         if lang == "ja":
             keywords = self.extract_keyword_jp_yahoo(corpus_text)
         else:
-            keywords = self.extract_keyword_en(corpus_text)
+            keywords = self.extract_keyword_en_watson(corpus_text)
 
         if content:
             finalkeywords = [KeywordwithURL(k.word,k.score,k.frequency,self.find_url_contain(k.word,corpus)) for k in keywords]

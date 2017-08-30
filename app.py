@@ -66,7 +66,7 @@ def show_result():
             try:
                 startTime0 = datetime.now()
                 analyser = KeywordAnalyser(keyword, numofresults=30, lang=language, tld=country, mobile=mobile)
-                scrapresult = analyser.scrap_data();
+                scrapresult = analyser.scrap_data()
                 startTime1 = datetime.now()
                 title_keywords = None#analyser.extract_keywords(scrapresult.titles, lang=language)
                 des_keywords = None#analyser.extract_keywords(scrapresult.descs, lang=language)
