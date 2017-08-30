@@ -34,8 +34,8 @@ TITLE_XPATH_DESKTOP = '//div[@class="rc" or @class="g"]/h3/a/text()'
 URL_XPATH_DESKTOP = '//div[@class="rc"]/h3/a/@href'
 DESC_XPATH_DESKTOP = '//div[@class="rc"]/div[@class="s"]/div/span/text()[last()]'
 
-TITLE_XPATH_MOBILE = '//div[@class="rc"]/div/h3/a/text()'
-URL_XPATH_MOBILE = '//div[@class="rc"]/div/h3/a/@href'
+TITLE_XPATH_MOBILE = '//div[@class="rc"]/div/div/h3/a/text()'
+URL_XPATH_MOBILE = '//div[@class="rc"]/div//div/h3/a/@href'
 DESC_XPATH_MOBILE= '//div[@class="rc"]/div[@class="s"]/div/span/text()[last()]'
 
 class ScraperError(Exception):

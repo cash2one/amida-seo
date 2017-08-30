@@ -3,7 +3,7 @@
 from sgoogle.keywordanalyser import KeywordAnalyser
 
 try:
-  ka = KeywordAnalyser("Kyoto", numofresults=20, lang="en", tld="com", mobile=False)
+  ka = KeywordAnalyser("Kyoto", numofresults=20, lang="en", tld="com", mobile=True)
   scrapresults = ka.scrap_data()
   print "=========Keyword Extract=============="
   results = ka.extract_keywords(scrapresults.contents, content=True, lang="ja")
