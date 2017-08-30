@@ -57,7 +57,7 @@ def show_result():
         db = client[app.config[('MONGODB_DB')]]
         coll = db.relevant_keywords
         keyword_exist = coll.find_one({"keyword":keyword, "searchtype":searchtype, "country":country})
-        if keyword_exist:
+        if keyword_exist and len(jsonpickle.decode(keyword_exist['content_keywords'])) > 1:
             content_keywords = jsonpickle.decode(keyword_exist['content_keywords'])
             title_keywords = None
             des_keywords = None
